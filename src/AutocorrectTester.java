@@ -16,6 +16,7 @@ public class AutocorrectTester {
         setTestData(0);
         studentSolution = new Autocorrect(dictionary, threshold);
         assertArrayEquals(matches, studentSolution.runTest(typed), "Incorrect words returned.");
+
     }
 
     @Test
