@@ -1,4 +1,3 @@
-import javax.print.DocFlavor;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -101,9 +100,9 @@ public class Autocorrect {
                 int dist2 = editDistance(typed, matches.get(j));
 
                 // Sort by edit distance, in the event of a tie use the alphabetically earlier word
-                if (dist1 > dist2 || dist1 == dist2 && matches.get(i).compareTo(matches.get(j)) > 0) {
-                    // If breaking the tie by frequency, then see which has a higher frequency score
-                    //if (dist1 > dist2 || dist1 == dist2 && getFrequency(matches.get(i)) < getFrequency(matches.get(j))) {
+//                if (dist1 > dist2 || dist1 == dist2 && matches.get(i).compareTo(matches.get(j)) > 0) {
+                // If breaking the tie by frequency, then see which has a higher frequency score
+                if (dist1 > dist2 || dist1 == dist2 && getFrequency(matches.get(i)) < getFrequency(matches.get(j))) {
                     String temp = matches.get(i);
                     matches.set(i, matches.get(j));
                     matches.set(j, temp);
@@ -114,6 +113,36 @@ public class Autocorrect {
 
         // Return the matches
         return matches.toArray(new String[0]);
+    }
+
+    public String topRecommendation(String typed) {
+        typed = typed.toLowerCase(Locale.ROOT);
+
+        if(dictionary.contains(typed)) {
+            return "Word is Correctly Spelled";
+        }
+
+        String best = null;
+        int bestDist = threshold + 1;
+
+        for(String word: frequency.keySet()) {
+            int dist = editDistance(typed, word);
+            if(dist < bestDist || (dist == bestDist && getFrequency(word) > getFrequency(best))) {
+                best = word;
+                bestDist = dist;
+            }
+        }
+
+        if(best != null) {
+            return "Top Recommendation for " + typed + ": " + best;
+        }
+
+        String[] results = runTest(typed);
+        if(results.length == 0) {
+            return "No Matches Found.";
+        }
+
+        return "Top Recommendation for " + typed + ": " + results[0];
     }
 
     // Helper method to determine edit distance
@@ -178,4 +207,19 @@ public class Autocorrect {
             throw new RuntimeException(e);
         }
     }
+
+    // Main method to type in terminal continuously
+    public static void main(String[] args) {
+        String[] words = loadDictionary("large");
+        Autocorrect ac = new Autocorrect(words, 2);
+
+        Scanner s = new Scanner(System.in);
+        String word;
+        // Switch with any word to see the top recommendation
+        while (true) {
+            word = s.nextLine();
+            System.out.println(ac.topRecommendation(word));
+        }
+    }
 }
+
