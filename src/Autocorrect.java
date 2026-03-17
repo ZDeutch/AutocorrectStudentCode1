@@ -115,33 +115,43 @@ public class Autocorrect {
         return matches.toArray(new String[0]);
     }
 
+    // Method to return topRecommendation from typed word
     public String topRecommendation(String typed) {
+        // normalize to remove case sensitivity
         typed = typed.toLowerCase(Locale.ROOT);
 
-        if(dictionary.contains(typed)) {
+        // Quick check to ensure it is truly misspelled
+        if (dictionary.contains(typed)) {
             return "Word is Correctly Spelled";
         }
 
+        // skeletal best cases to start
         String best = null;
         int bestDist = threshold + 1;
 
-        for(String word: frequency.keySet()) {
+        // Go through each word and check their distance from what's typed
+        // If it is closer, or if it is the same distance as the best word but more frequent
+        // Make this word the best word and distance
+        for (String word : frequency.keySet()) {
             int dist = editDistance(typed, word);
-            if(dist < bestDist || (dist == bestDist && getFrequency(word) > getFrequency(best))) {
+            if (dist < bestDist || (dist == bestDist && getFrequency(word) > getFrequency(best))) {
                 best = word;
                 bestDist = dist;
             }
         }
 
-        if(best != null) {
+        // Return the top match if there was any word that fit the threshold
+        if (best != null) {
             return "Top Recommendation for " + typed + ": " + best;
         }
 
+        // Otherwise run a full dictionary test through runTest
         String[] results = runTest(typed);
-        if(results.length == 0) {
+        if (results.length == 0) {
             return "No Matches Found.";
         }
 
+        // Return result from whole dictionary
         return "Top Recommendation for " + typed + ": " + results[0];
     }
 
